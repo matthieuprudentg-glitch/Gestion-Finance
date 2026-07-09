@@ -1,39 +1,65 @@
-<?php include('commun/header.php'); ?>
-<!-- contenue de la page de salaire -->
- <div>
-        <h1>Page Salaire</h1>
-    </div>
-<?php include('../bdd/bdd.php'); //inclusion de la connexion a la base de donnee
-//var_dump($_POST); //permet de voir les donnes envoyees par le formulaire
+<?php 
+include('../bdd/bdd.php');
 
-if (isset($_POST['libelle'])) { //verifie si le bouton valider a ete clique
-    //recuperation des donnes du formulaire
-    //var_dump('je rentre dedans'); //permet de voir la donnee saisie dans la case libelle
-    $requete = $bdd->prepare ("INSERT INTO salaire(libelle, montant) VALUES (:libelle, :montant)"); //preparation de la requete d'insertion et : sert de variable temporaire
-    $requete->bindParam(':libelle', $_POST['libelle']); //liaison du parametre :libelle avec la donnee saisie dans la case libelle
-    //requete pour remplacer la valeur de :libelle par la donnee saisie dans la case libelle
-    $requete->bindParam(':montant', $_POST['montant']); //liaison du parametre :montant avec la donnee saisie dans la case montant
-
-    $requete->execute(); //execution de la requete
-
-    header('Location:http://localhost/promo321/pageslairefianlamodifier/view/listSalaire.php'); //redirection vers la page salaire.php
-
+$error = '';
+if (isset($_POST['libelle'])) {
+    $libelle = trim($_POST['libelle']);
+    $montant = floatval($_POST['montant']);
+    
+    if (!empty($libelle) && $montant > 0) {
+        $requete = $bdd->prepare("INSERT INTO salaire(libelle, montant) VALUES (:libelle, :montant)");
+        $requete->bindParam(':libelle', $libelle);
+        $requete->bindParam(':montant', $montant);
+        $requete->execute();
+        
+        header('Location: listSalaire.php');
+        exit();
+    } else {
+        $error = 'Veuillez remplir tous les champs correctement.';
+    }
 }
 
+include('commun/header.php'); 
 ?>
 
-    <div>
-        <h1>Formulaire de salaire</h1>
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom">
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <h3 class="mb-0"><i class="bi bi-cash-stack text-gradient me-2"></i>Ajouter un salaire</h3>
+                <a href="listSalaire.php" class="btn btn-sm btn-custom bg-transparent border-secondary text-secondary" style="border: 1px solid var(--card-border) !important;"><i class="bi bi-list"></i> Liste</a>
+            </div>
+            <div class="card-body p-4">
+                <?php if (!empty($error)): ?>
+                    <div class="alert alert-danger" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.2); color: var(--accent-danger);" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> <?php echo $error; ?>
+                    </div>
+                <?php endif; ?>
 
-        <form action=" " method="post"> <!-- permet d'envoyer les donnes du formulaire en methode post -->
-            <!--formulaire de saisie-->
-            <p>nom entreprise</p>
-            <!--input permet au client de saisir dans la case-->
-            <input type="text" name="libelle" placehold="libelle"> <!-- name permet de nommer la case pour recuperer la donnee-->
-            <p>montant</p>
-            <input type="number" name="montant" placeholder="montant"> <!-- PLACEHOLDER est un texte d'aide a la saisie-->
+                <form action="" method="post">
+                    <div class="mb-4">
+                        <label for="libelle" class="form-label text-secondary fw-semibold">Nom de l'entreprise / Source</label>
+                        <div class="input-group">
+                            <span class="input-group-text form-control-custom bg-transparent border-end-0 text-secondary" style="border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important;"><i class="bi bi-building"></i></span>
+                            <input type="text" class="form-control form-control-custom border-start-0" style="border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important;" id="libelle" name="libelle" placeholder="Ex: Entreprise Tech" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="montant" class="form-label text-secondary fw-semibold">Montant (€)</label>
+                        <div class="input-group">
+                            <span class="input-group-text form-control-custom bg-transparent border-end-0 text-secondary" style="border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important;"><i class="bi bi-currency-euro"></i></span>
+                            <input type="number" step="0.01" class="form-control form-control-custom border-start-0" style="border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important;" id="montant" name="montant" placeholder="Ex: 2500" required>
+                        </div>
+                    </div>
 
-            <input type="submit" name="valider" value="valider">
-        </form>
+                    <button type="submit" name="valider" class="btn btn-custom w-100 py-3 mt-2">
+                        <i class="bi bi-plus-circle-fill"></i> Enregistrer le salaire
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
+</div>
+
 <?php include('commun/footer.php'); ?>
